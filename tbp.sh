@@ -67,19 +67,19 @@ USER_PRJ=${USER_REPO:0:(${#USER_REPO}-4)}
 TRACKERS_URL="https://github.com/$USER_PRJ/issues"
 HOMEPAGE_URL="https://github.com/$USER_PRJ#readme"
 
+echo "Copying files.."
 # copy app folder as is
 cp -r ./app $PRJ_PATH/app
 # copy config folder as is
 cp -r ./config $PRJ_PATH/config
 # copy "special" files
-files_to_copy=( package.json gulpfile.js LICENSE README.md .gitignore )
+files_to_copy=( package.json gulpfile.js LICENSE .gitignore )
 for i in "${files_to_copy[@]}"
 do
   cp $i $PRJ_PATH/$i
 done
 
 echo "Updating package.json"
-cp package.json $PRJ_PATH/package.json
 sed -i '' -e s/PROJECT_NAME_HERE/$PRJ_NAME/ $PRJ_PATH/package.json
 sed -i '' -e s/PROJECT_DESC_HERE/$in_description/ $PRJ_PATH/package.json
 sed -i '' -e s/REPO_URL_HERE/${PRJ_REPO//\//\\/}/ $PRJ_PATH/package.json
@@ -87,8 +87,13 @@ sed -i '' -e s/KEYWORDS_HERE/$PRJ_KEYWORDS/ $PRJ_PATH/package.json
 sed -i '' -e s/TRACKER_URL_HERE/${TRACKERS_URL//\//\\/}/ $PRJ_PATH/package.json
 sed -i '' -e s/README_URL_HERE/${HOMEPAGE_URL//\//\\/}/ $PRJ_PATH/package.json
 
+echo "Updating README.md"
+echo "# $PRJ_NAME" > $PRJ_PATH/README.md
+echo "$in_description" >> $PRJ_PATH/README.md
+
 cd $PRJ_PATH
 
+# init git repo
 git init
 git remote add origin $GIT_URL
 git remote -v
