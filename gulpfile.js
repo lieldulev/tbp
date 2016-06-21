@@ -1,5 +1,6 @@
 var path = require('path');
 var gulp = require('gulp');
+var debug = require('gulp-debug');
 var plumber = require('gulp-plumber');
 var browserify = require('gulp-browserify');
 var handlebars = require('gulp-handlebars');
@@ -16,7 +17,6 @@ gulp.task('sass', function () {
     .pipe(concat('main.css'))
     .pipe(gulp.dest('dist/css/'));
 });
-
 
 // Minify the app for the browser
 gulp.task('javascript', function () {
@@ -37,22 +37,16 @@ gulp.task('copy-static-files', function() {
     gulp.src('app/assets/js/*.js').pipe(gulp.dest('dist/js/'));
     gulp.src('app/assets/images/*').pipe(gulp.dest('dist/images/'));
     gulp.src('app/assets/css/*.css').pipe(gulp.dest('dist/css/'));
+    gulp.src('app/assets/fonts/**/*').pipe(gulp.dest('dist/fonts/'));
 });
 
+
 gulp.task('templates', function(){
-
-  var partials = gulp.src('app/templates/partials/*.hbs')
+  var partials = gulp.src(['app/templates/partials/_*.hbs'])
     .pipe(handlebars())
-    .pipe(wrap('Handlebars.registerPartial(<%= processPartialName(file.relative) %>, Handlebars.template(<%= contents %>));', {}, {
-      imports: {
-        processPartialName: function(fileName) {
-          console.log(fileName);
-          return JSON.stringify(path.basename(fileName, '.js'));
-        }
-      }
-    }));
+    .pipe(wrap('Handlebars.registerPartial("<%= file.relative.substr(1, file.relative.length-4) %>", Handlebars.template(<%= contents %>));'))
 
-  var templates = gulp.src('app/templates/**/*.hbs')
+  var templates = gulp.src('app/templates/**/[^_]*.hbs')
     // Compile each Handlebars template source file to a template function
     .pipe(handlebars())
     // Wrap each template function in a call to Handlebars.template
@@ -70,6 +64,7 @@ gulp.task('templates', function(){
     }));
 
   merge(partials, templates)
+    .pipe(debug())
     .pipe(concat('templates.js'))
     .pipe(gulp.dest('dist/js/'));
 });
@@ -89,3 +84,5 @@ gulp.task('default', function (callback) {
       callback(error);
     });
 });
+
+
